@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabase';
 import AdminMenu from './AdminMenu';
 import AdminSettings from './AdminSettings';
 import AdminGallery from './AdminGallery';
+import AdminReviews from './AdminReviews';
 import { useAuth } from '../context/AuthContext';
 
 const AdminLayout = ({ children }) => {
@@ -52,6 +53,10 @@ const AdminLayout = ({ children }) => {
           <Link to="/admin/gallery" onClick={() => { if(window.innerWidth < 1024) setSidebarOpen(false) }} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-matcha-800/80 transition-colors font-medium">
             <ImageIcon size={20} className="text-matcha-300" />
             <span>Kelola Galeri</span>
+          </Link>
+          <Link to="/admin/reviews" onClick={() => { if(window.innerWidth < 1024) setSidebarOpen(false) }} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-matcha-800/80 transition-colors font-medium">
+            <MessageSquare size={20} className="text-matcha-300" />
+            <span>Kelola Testimoni</span>
           </Link>
           <Link to="/admin/settings" onClick={() => { if(window.innerWidth < 1024) setSidebarOpen(false) }} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-matcha-800/80 transition-colors font-medium">
             <Settings size={20} className="text-matcha-300" />
@@ -370,6 +375,7 @@ const AdminPage = () => {
         <Route path="/" element={<Dashboard />} />
         <Route path="/menu" element={<AdminMenu />} />
         <Route path="/gallery" element={<AdminGallery />} />
+        <Route path="/reviews" element={<AdminReviews />} />
         <Route path="/settings" element={<AdminSettings />} />
       </Routes>
     </AdminLayout>
