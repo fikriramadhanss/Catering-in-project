@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, Utensils, Image as ImageIcon, Settings, LogOut, 
-  Menu as MenuIcon, DollarSign, ShoppingCart, CheckCircle, XCircle, Clock, TrendingUp
+  Menu as MenuIcon, DollarSign, ShoppingCart, CheckCircle, XCircle, Clock, TrendingUp, MessageSquare
 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '../lib/supabase';
