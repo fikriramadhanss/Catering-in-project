@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@theme {
+  --color-matcha-50: #f2f7f1;
+  --color-matcha-100: #e2ede0;
+  --color-matcha-200: #c6dfc3;
+  --color-matcha-300: #9fc89b;
+  --color-matcha-400: #74ab70;
+  --color-matcha-500: #518f4d;
+  --color-matcha-600: #3e713a;
+  --color-matcha-700: #335930;
+  --color-matcha-800: #2b4829;
+  --color-matcha-900: #243b22;
+  --color-matcha-950: #122011;
+  
+  --color-bone: #f9f6f0;
+  --color-dark: #1a1a1a;
+}
+
+@layer base {
+  body {
+    @apply bg-bone text-dark font-sans;
+  }
+}
