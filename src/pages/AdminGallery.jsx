@@ -236,8 +236,8 @@ const AdminGallery = () => {
             className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity"
             onClick={() => setIsModalOpen(false)}
           ></div>
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden relative z-10 transform transition-all">
-            <div className="flex justify-between items-center p-6 md:p-8 border-b border-gray-100">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden relative z-10 transform transition-all flex flex-col max-h-[90vh]">
+            <div className="flex justify-between items-center p-6 md:p-8 border-b border-gray-100 flex-shrink-0">
               <div>
                 <h2 className="text-2xl font-extrabold text-gray-800 tracking-tight">
                   {formData.id ? 'Edit Foto' : 'Tambah Foto Baru'}
@@ -252,7 +252,7 @@ const AdminGallery = () => {
               </button>
             </div>
             
-            <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6">
+            <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6 overflow-y-auto flex-1">
               
               <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100">
                 <label className="block text-sm font-bold text-gray-700 mb-3">Pilih Foto <span className="text-red-500">*</span></label>
