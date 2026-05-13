@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Utensils, Image as ImageIcon, Settings, LogOut, 
-  Menu as MenuIcon, DollarSign, ShoppingCart, CheckCircle, XCircle, Clock, TrendingUp, MessageSquare
+  Menu as MenuIcon, DollarSign, ShoppingCart, CheckCircle, XCircle, 
+  Clock, TrendingUp, MessageSquare, ChefHat, X, Bell
 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '../lib/supabase';
@@ -11,10 +12,20 @@ import AdminSettings from './AdminSettings';
 import AdminGallery from './AdminGallery';
 import AdminReviews from './AdminReviews';
 import { useAuth } from '../context/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const navItems = [
+  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+  { to: '/admin/menu', label: 'Kelola Menu', icon: Utensils },
+  { to: '/admin/gallery', label: 'Kelola Galeri', icon: ImageIcon },
+  { to: '/admin/reviews', label: 'Kelola Testimoni', icon: MessageSquare },
+  { to: '/admin/settings', label: 'Pengaturan', icon: Settings },
+];
 
 const AdminLayout = ({ children }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { logout, user } = useAuth();
 
   const handleLogout = async () => {
@@ -26,76 +37,157 @@ const AdminLayout = ({ children }) => {
     }
   };
 
+  const isActive = (to, exact) => {
+    if (exact) return location.pathname === to;
+    return location.pathname.startsWith(to);
+  };
+
+  const currentPage = navItems.find(n => isActive(n.to, n.exact))?.label || 'Dashboard';
+
   return (
-    <div className="min-h-screen bg-gray-50 flex font-sans text-gray-800 overflow-hidden">
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden transition-opacity"
-          onClick={() => setSidebarOpen(false)}
-        ></div>
-      )}
+    <div className="min-h-screen bg-gray-900 flex font-sans text-gray-100 overflow-hidden">
+      
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 bg-matcha-900 text-white w-64 flex flex-col transition-transform duration-300 shadow-2xl lg:relative lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="h-20 flex items-center justify-center border-b border-matcha-800/50 bg-matcha-900 flex-shrink-0">
-          <span className="text-xl font-bold tracking-wide">Catering-in <span className="text-matcha-300">Admin</span></span>
-        </div>
-        <nav className="flex-1 overflow-y-auto p-4 space-y-2 mt-2">
-          <Link to="/admin" onClick={() => { if(window.innerWidth < 1024) setSidebarOpen(false) }} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-matcha-800/80 transition-colors font-medium">
-            <LayoutDashboard size={20} className="text-matcha-300" />
-            <span>Dashboard</span>
-          </Link>
-          <Link to="/admin/menu" onClick={() => { if(window.innerWidth < 1024) setSidebarOpen(false) }} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-matcha-800/80 transition-colors font-medium">
-            <Utensils size={20} className="text-matcha-300" />
-            <span>Kelola Menu</span>
-          </Link>
-          <Link to="/admin/gallery" onClick={() => { if(window.innerWidth < 1024) setSidebarOpen(false) }} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-matcha-800/80 transition-colors font-medium">
-            <ImageIcon size={20} className="text-matcha-300" />
-            <span>Kelola Galeri</span>
-          </Link>
-          <Link to="/admin/reviews" onClick={() => { if(window.innerWidth < 1024) setSidebarOpen(false) }} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-matcha-800/80 transition-colors font-medium">
-            <MessageSquare size={20} className="text-matcha-300" />
-            <span>Kelola Testimoni</span>
-          </Link>
-          <Link to="/admin/settings" onClick={() => { if(window.innerWidth < 1024) setSidebarOpen(false) }} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-matcha-800/80 transition-colors font-medium">
-            <Settings size={20} className="text-matcha-300" />
-            <span>Pengaturan</span>
-          </Link>
-          <div className="pt-8 pb-4">
-            <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-300 hover:bg-red-500/10 transition-colors font-medium">
-              <LogOut size={20} />
-              <span>Keluar</span>
-            </button>
+      <aside className={`
+        fixed inset-y-0 left-0 z-50 w-64 flex flex-col
+        bg-gray-900 border-r border-gray-800 shadow-2xl
+        transition-transform duration-300
+        lg:relative lg:translate-x-0
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        {/* Sidebar Header */}
+        <div className="h-16 flex items-center justify-between px-5 border-b border-gray-800 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-matcha-600 rounded-lg flex items-center justify-center shadow-sm">
+              <ChefHat size={18} className="text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-extrabold text-white leading-none">Catering-in</p>
+              <p className="text-[10px] text-matcha-400 font-semibold tracking-wider uppercase leading-none mt-0.5">Admin Panel</p>
+            </div>
           </div>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden p-1.5 rounded-lg text-gray-500 hover:text-gray-300 hover:bg-gray-800 transition-colors"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Nav Items */}
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+          <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest px-3 mb-3">Menu Utama</p>
+          {navItems.map(({ to, label, icon: Icon, exact }) => {
+            const active = isActive(to, exact);
+            return (
+              <Link
+                key={to}
+                to={to}
+                onClick={() => { if (window.innerWidth < 1024) setSidebarOpen(false); }}
+                className={`
+                  flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200
+                  ${active
+                    ? 'bg-matcha-600 text-white shadow-md shadow-matcha-900/40'
+                    : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100'}
+                `}
+              >
+                <Icon size={18} className={active ? 'text-white' : 'text-gray-500'} />
+                {label}
+                {active && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white/70" />}
+              </Link>
+            );
+          })}
         </nav>
+
+        {/* User & Logout */}
+        <div className="p-4 border-t border-gray-800 flex-shrink-0">
+          <div className="flex items-center gap-3 mb-3 px-1 bg-gray-800/50 rounded-xl p-2">
+            <div className="w-8 h-8 rounded-lg bg-matcha-100 flex items-center justify-center text-matcha-700 font-bold text-sm flex-shrink-0 uppercase">
+              {user?.email?.charAt(0) || 'A'}
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-gray-200 truncate">{user?.email?.split('@')[0] || 'Admin'}</p>
+              <p className="text-[10px] text-gray-500 truncate">{user?.email || 'admin@catering.com'}</p>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
+          >
+            <LogOut size={16} />
+            Keluar
+          </button>
+        </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0 h-screen bg-gray-50/50">
-        <header className="h-20 bg-white shadow-sm flex items-center px-4 md:px-6 border-b border-gray-100 z-10 flex-shrink-0">
-          <button 
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="text-gray-500 hover:text-matcha-600 focus:outline-none bg-gray-50 hover:bg-gray-100 p-2 rounded-lg transition-colors lg:hidden"
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Top Header */}
+        <header className="h-16 bg-gray-800 border-b border-gray-700 flex items-center px-4 md:px-6 gap-4 flex-shrink-0 z-10 shadow-sm">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="lg:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-700 transition-colors"
           >
-            <MenuIcon size={24} />
+            <MenuIcon size={20} />
           </button>
-          <div className="ml-auto flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-matcha-100 flex items-center justify-center text-matcha-700 font-bold border-2 border-white shadow-sm uppercase">
-              {user?.email ? user.email.charAt(0) : 'A'}
+
+          <div>
+            <h1 className="text-sm font-extrabold text-white">{currentPage}</h1>
+            <p className="text-xs text-gray-500 leading-none mt-0.5">
+              {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            </p>
+          </div>
+
+          <div className="ml-auto flex items-center gap-3">
+            <button className="p-2 rounded-lg text-gray-400 hover:bg-gray-700 hover:text-gray-200 transition-colors relative">
+              <Bell size={18} />
+            </button>
+            <div className="hidden sm:flex items-center gap-2.5 bg-gray-700/60 border border-gray-600 rounded-xl px-3 py-2">
+              <div className="w-7 h-7 rounded-lg bg-matcha-600 flex items-center justify-center text-white font-bold text-xs uppercase">
+                {user?.email?.charAt(0) || 'A'}
+              </div>
+              <span className="text-sm font-bold text-gray-200 max-w-[120px] truncate">
+                {user?.email?.split('@')[0] || 'Admin'}
+              </span>
             </div>
-            <span className="text-sm font-bold text-gray-700 hidden sm:block">
-              {user?.email ? user.email.split('@')[0] : 'Admin Workspace'}
-            </span>
           </div>
         </header>
-        <div className="flex-1 overflow-auto p-6 md:p-8">
+
+        {/* Page Content */}
+        <div className="flex-1 overflow-auto p-5 md:p-7 bg-gray-900">
           {children}
         </div>
       </main>
     </div>
   );
 };
+
+const StatCard = ({ title, value, icon: Icon, color, bg, trend }) => (
+  <div className={`bg-gray-800 rounded-2xl p-5 border border-gray-700 hover:border-gray-600 hover:shadow-2xl hover:shadow-black/30 transition-all duration-300 relative overflow-hidden group`}>
+    <div className={`absolute top-0 right-0 w-24 h-24 rounded-full ${bg} opacity-10 -mr-6 -mt-6 group-hover:scale-110 transition-transform duration-500`} />
+    <div className="flex justify-between items-start mb-4">
+      <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">{title}</p>
+      <div className={`p-2.5 rounded-xl ${bg}`}>
+        <Icon size={18} className={color} />
+      </div>
+    </div>
+    <p className="text-3xl font-black text-white">{value}</p>
+    {trend && <p className="text-xs text-gray-500 mt-1">{trend}</p>}
+  </div>
+);
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -107,31 +199,14 @@ const Dashboard = () => {
   const [recentOrders, setRecentOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Helper to calculate stats locally
   const calculateStats = (orders) => {
-    let revenue = 0;
-    let pending = 0;
-    let completed = 0;
-    let canceled = 0;
-
+    let revenue = 0, pending = 0, completed = 0, canceled = 0;
     orders.forEach(order => {
-      if (order.status === 'selesai') {
-        revenue += (order.total_price || 0);
-        completed++;
-      } else if (order.status === 'dibatalkan') {
-        canceled++;
-      } else {
-        // pending & diproses
-        pending++;
-      }
+      if (order.status === 'selesai') { revenue += (order.total_price || 0); completed++; }
+      else if (order.status === 'dibatalkan') { canceled++; }
+      else { pending++; }
     });
-
-    setStats({
-      totalRevenue: revenue,
-      countPending: pending,
-      countCompleted: completed,
-      countCanceled: canceled
-    });
+    setStats({ totalRevenue: revenue, countPending: pending, countCompleted: completed, countCanceled: canceled });
   };
 
   useEffect(() => {
@@ -142,207 +217,176 @@ const Dashboard = () => {
           .from('orders')
           .select('*')
           .order('created_at', { ascending: false });
-          
         if (error) throw error;
-
-        if (orders) {
-          calculateStats(orders);
-          setRecentOrders(orders); // Keep all in state for local calculation when status changes
-        }
+        if (orders) { calculateStats(orders); setRecentOrders(orders); }
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
       } finally {
         setLoading(false);
       }
     };
-    
     fetchDashboardData();
   }, []);
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
-      const { error } = await supabase
-        .from('orders')
-        .update({ status: newStatus })
-        .eq('id', orderId);
-        
+      const { error } = await supabase.from('orders').update({ status: newStatus }).eq('id', orderId);
       if (error) throw error;
-      
-      // Update local state and recalculate
-      setRecentOrders(prevOrders => {
-        const updatedOrders = prevOrders.map(order => 
-          order.id === orderId ? { ...order, status: newStatus } : order
-        );
-        calculateStats(updatedOrders);
-        return updatedOrders;
+      setRecentOrders(prev => {
+        const updated = prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o);
+        calculateStats(updated);
+        return updated;
       });
     } catch (err) {
-      console.error("Error updating order status:", err);
       alert("Gagal mengupdate status pesanan.");
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'selesai': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-      case 'diproses': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'dibatalkan': return 'bg-red-100 text-red-700 border-red-200';
-      default: return 'bg-amber-100 text-amber-700 border-amber-200'; // pending/menunggu
-    }
+  const statusConfig = {
+    selesai:    { label: 'Selesai',   cls: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
+    diproses:   { label: 'Diproses',  cls: 'bg-blue-100 text-blue-700 border-blue-200' },
+    dibatalkan: { label: 'Dibatalkan',cls: 'bg-red-100 text-red-700 border-red-200' },
+    pending:    { label: 'Menunggu',  cls: 'bg-amber-100 text-amber-700 border-amber-200' },
   };
 
+  const getStatusCls = (s) => (statusConfig[s] || statusConfig.pending).cls;
+
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Ringkasan Penjualan</h1>
-          <p className="text-gray-500 mt-2">Pantau performa bisnis dan pesanan terbaru Anda hari ini.</p>
-        </div>
-      </div>
-      
+    <div className="max-w-7xl mx-auto space-y-6">
+
       {loading ? (
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-matcha-600"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-matcha-600" />
         </div>
       ) : (
         <>
-          {/* Main Stat Card - Revenue */}
-          <div className="bg-gradient-to-br from-matcha-600 to-matcha-800 rounded-3xl p-8 text-white shadow-xl mb-8 relative overflow-hidden">
-            {/* Decorative circles */}
-            <div className="absolute top-0 right-0 -mr-8 -mt-8 w-48 h-48 rounded-full bg-white opacity-10"></div>
-            <div className="absolute bottom-0 right-16 -mb-10 w-32 h-32 rounded-full bg-white opacity-10"></div>
-            
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          {/* Revenue Hero Card */}
+          <div className="bg-gradient-to-br from-matcha-600 via-matcha-700 to-matcha-900 rounded-3xl p-6 md:p-8 text-white relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-white/5 -mr-16 -mt-16" />
+            <div className="absolute bottom-0 left-1/2 w-40 h-40 rounded-full bg-white/5 -mb-12" />
+            <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
               <div>
-                <div className="flex items-center gap-2 text-matcha-100 mb-2 font-medium">
-                  <DollarSign size={20} />
+                <div className="flex items-center gap-2 text-matcha-200 text-sm font-semibold mb-3">
+                  <DollarSign size={16} />
                   <span>Total Pendapatan Bersih</span>
                 </div>
-                <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+                <p className="text-4xl md:text-5xl font-black tracking-tight mb-2">
                   Rp {stats.totalRevenue.toLocaleString('id-ID')}
-                </h2>
-                <p className="text-matcha-200 text-sm mt-3 flex items-center gap-1">
-                  <TrendingUp size={16} /> Hanya dihitung dari pesanan selesai
                 </p>
+                <div className="flex items-center gap-1.5 text-matcha-200/80 text-xs">
+                  <TrendingUp size={13} />
+                  <span>Dihitung dari {stats.countCompleted} pesanan selesai</span>
+                </div>
               </div>
-              <div className="bg-white/20 backdrop-blur-md p-4 rounded-2xl flex items-center justify-center">
-                <ShoppingCart size={48} className="text-white opacity-90" />
+              <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-4 w-fit">
+                <ShoppingCart size={40} className="text-white/80" />
               </div>
             </div>
           </div>
 
-          {/* Secondary Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100 hover:shadow-lg transition-shadow">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider mb-1">Dalam Proses</p>
-                  <h3 className="text-3xl font-black text-gray-800">{stats.countPending}</h3>
-                </div>
-                <div className="p-3 bg-amber-50 rounded-xl">
-                  <Clock size={24} className="text-amber-500" />
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100 hover:shadow-lg transition-shadow">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider mb-1">Berhasil</p>
-                  <h3 className="text-3xl font-black text-gray-800">{stats.countCompleted}</h3>
-                </div>
-                <div className="p-3 bg-emerald-50 rounded-xl">
-                  <CheckCircle size={24} className="text-emerald-500" />
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100 hover:shadow-lg transition-shadow">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider mb-1">Dibatalkan</p>
-                  <h3 className="text-3xl font-black text-gray-800">{stats.countCanceled}</h3>
-                </div>
-                <div className="p-3 bg-red-50 rounded-xl">
-                  <XCircle size={24} className="text-red-500" />
-                </div>
-              </div>
-            </div>
+          {/* Stat Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <StatCard
+              title="Dalam Proses"
+              value={stats.countPending}
+              icon={Clock}
+              color="text-amber-500"
+              bg="bg-amber-100"
+              trend="Menunggu & sedang diproses"
+            />
+            <StatCard
+              title="Berhasil"
+              value={stats.countCompleted}
+              icon={CheckCircle}
+              color="text-emerald-500"
+              bg="bg-emerald-100"
+              trend="Pesanan selesai"
+            />
+            <StatCard
+              title="Dibatalkan"
+              value={stats.countCanceled}
+              icon={XCircle}
+              color="text-red-500"
+              bg="bg-red-100"
+              trend="Pesanan dibatalkan"
+            />
           </div>
-          
+
           {/* Orders Table */}
-          <div className="bg-white rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-              <h2 className="text-lg font-extrabold text-gray-800">Riwayat Pesanan</h2>
-              <span className="text-sm font-medium text-gray-500 bg-white px-3 py-1 rounded-full border border-gray-200">
-                Total {recentOrders.length} Pesanan
+          <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 className="text-base font-extrabold text-white">Riwayat Pesanan</h2>
+                <p className="text-xs text-gray-500 mt-0.5">10 pesanan terbaru</p>
+              </div>
+              <span className="text-xs font-bold text-matcha-400 bg-matcha-900/40 px-3 py-1 rounded-full border border-matcha-800">
+                {recentOrders.length} Total Pesanan
               </span>
             </div>
-            
+
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-sm text-left">
                 <thead>
-                  <tr className="bg-white text-gray-400 text-xs uppercase tracking-wider border-b border-gray-100">
-                    <th className="p-5 font-semibold">Pemesan</th>
-                    <th className="p-5 font-semibold">Tanggal</th>
-                    <th className="p-5 font-semibold">Ringkasan Item</th>
-                    <th className="p-5 font-semibold">Total Tagihan</th>
-                    <th className="p-5 font-semibold text-center">Status</th>
+                  <tr className="text-[11px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-700 bg-gray-900/40">
+                    <th className="px-5 py-3.5">Pemesan</th>
+                    <th className="px-5 py-3.5 hidden sm:table-cell">Tanggal</th>
+                    <th className="px-5 py-3.5 hidden md:table-cell">Item</th>
+                    <th className="px-5 py-3.5">Total</th>
+                    <th className="px-5 py-3.5 text-center">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-gray-700/50">
                   {recentOrders.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="p-12 text-center">
-                        <div className="flex flex-col items-center justify-center text-gray-400">
-                          <ShoppingCart size={48} className="mb-4 opacity-50" />
-                          <p className="text-lg font-medium text-gray-600">Belum Ada Pesanan Masuk</p>
-                          <p className="text-sm mt-1">Pesanan dari pelanggan akan muncul di sini.</p>
+                      <td colSpan="5" className="px-5 py-16 text-center">
+                        <div className="flex flex-col items-center gap-3 text-gray-600">
+                          <ShoppingCart size={40} className="opacity-30" />
+                          <div>
+                            <p className="font-semibold text-gray-400">Belum ada pesanan</p>
+                            <p className="text-xs mt-0.5 text-gray-600">Pesanan pelanggan akan muncul di sini</p>
+                          </div>
                         </div>
                       </td>
                     </tr>
                   ) : (
-                    // Display up to 10 recent orders on dashboard
                     recentOrders.slice(0, 10).map((order) => (
-                      <tr key={order.id} className="hover:bg-gray-50/80 transition-colors group">
-                        <td className="p-5">
-                          <div className="flex flex-col">
-                            <span className="font-bold text-gray-800">{order.customer_name || `Pesanan #${order.id}`}</span>
-                            {order.customer_phone && <span className="text-xs text-gray-500 mt-1">{order.customer_phone}</span>}
-                            {order.payment_method && <span className="text-[10px] font-semibold text-matcha-600 uppercase mt-1 tracking-wider">{order.payment_method}</span>}
-                          </div>
+                      <tr key={order.id} className="hover:bg-gray-700/30 transition-colors group">
+                        <td className="px-5 py-4">
+                          <p className="font-bold text-gray-100 text-sm">{order.customer_name || `Pesanan #${order.id}`}</p>
+                          {order.customer_phone && <p className="text-xs text-gray-500 mt-0.5">{order.customer_phone}</p>}
+                          {order.payment_method && (
+                            <span className="text-[10px] font-bold text-matcha-600 uppercase tracking-wider">{order.payment_method}</span>
+                          )}
                         </td>
-                        <td className="p-5">
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium text-gray-700">
-                              {new Date(order.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-                            </span>
-                            <span className="text-xs text-gray-400 mt-1">
-                              {new Date(order.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                          </div>
+                        <td className="px-5 py-4 hidden sm:table-cell">
+                          <p className="text-sm text-gray-300 font-medium">
+                            {new Date(order.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {new Date(order.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                          </p>
                         </td>
-                        <td className="p-5">
-                          <div className="text-sm text-gray-600 max-w-[200px] line-clamp-2">
-                            {order.items && order.items.map(i => `${i.quantity}x ${i.title}`).join(', ')}
-                          </div>
+                        <td className="px-5 py-4 hidden md:table-cell">
+                          <p className="text-sm text-gray-400 max-w-[180px] line-clamp-2 leading-relaxed">
+                            {order.items?.map(i => `${i.quantity}x ${i.title}`).join(', ')}
+                          </p>
                         </td>
-                        <td className="p-5">
-                          <span className="font-extrabold text-gray-800">
-                            Rp {order.total_price.toLocaleString('id-ID')}
-                          </span>
+                        <td className="px-5 py-4">
+                          <p className="font-extrabold text-white">
+                            Rp {order.total_price?.toLocaleString('id-ID')}
+                          </p>
                         </td>
-                        <td className="p-5 text-center">
+                        <td className="px-5 py-4 text-center">
                           <select
                             value={order.status || 'pending'}
                             onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                            className={`text-xs font-bold px-3 py-1.5 rounded-full outline-none cursor-pointer border transition-colors shadow-sm appearance-none text-center ${getStatusColor(order.status || 'pending')}`}
-                            style={{ backgroundImage: 'none' }} // Remove default dropdown arrow for cleaner look
+                            className={`text-xs font-bold px-3 py-1.5 rounded-full outline-none cursor-pointer border transition-colors appearance-none text-center ${getStatusCls(order.status || 'pending')}`}
+                            style={{ backgroundImage: 'none' }}
                           >
-                            <option value="pending" className="bg-white text-gray-800 font-medium">Menunggu</option>
-                            <option value="diproses" className="bg-white text-gray-800 font-medium">Diproses</option>
-                            <option value="selesai" className="bg-white text-gray-800 font-medium">Selesai</option>
-                            <option value="dibatalkan" className="bg-white text-gray-800 font-medium">Dibatalkan</option>
+                            <option value="pending">Menunggu</option>
+                            <option value="diproses">Diproses</option>
+                            <option value="selesai">Selesai</option>
+                            <option value="dibatalkan">Dibatalkan</option>
                           </select>
                         </td>
                       </tr>
@@ -350,14 +394,15 @@ const Dashboard = () => {
                   )}
                 </tbody>
               </table>
-              {recentOrders.length > 10 && (
-                <div className="p-4 border-t border-gray-100 text-center">
-                  <button className="text-sm font-semibold text-matcha-600 hover:text-matcha-700">
-                    Lihat Semua Pesanan ({recentOrders.length})
-                  </button>
-                </div>
-              )}
             </div>
+
+            {recentOrders.length > 10 && (
+              <div className="px-5 py-4 border-t border-gray-700 text-center">
+                <p className="text-xs text-gray-500">
+                  Menampilkan 10 dari <span className="font-bold text-gray-300">{recentOrders.length}</span> pesanan
+                </p>
+              </div>
+            )}
           </div>
         </>
       )}
